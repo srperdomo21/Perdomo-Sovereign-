@@ -100,7 +100,7 @@
             <input type="text" id="c-phone" placeholder="WhatsApp" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
             <input type="text" id="c-address" placeholder="Dirección" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
             <input type="text" id="c-business" placeholder="Negocio" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-2" id="amount-container">
                 <input type="number" id="c-income" placeholder="Ingresos RD$" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
                 <input type="number" id="c-amount" placeholder="Préstamo RD$" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
             </div>
@@ -109,7 +109,10 @@
                 <button onclick="document.getElementById('c-photo-input').click()" class="w-full p-3 bg-slate-800 rounded-xl text-[10px] font-bold uppercase italic">📸 Fotos</button>
                 <input type="file" id="c-photo-input" capture="camera" accept="image/*" class="hidden" onchange="handlePhotos(this)">
             </div>
-            <canvas id="sig-canvas" width="300" height="150" class="w-full"></canvas>
+            <div id="signature-container">
+                <p class="text-[9px] text-slate-500 uppercase text-center">Firma Digital</p>
+                <canvas id="sig-canvas" width="300" height="150" class="w-full"></canvas>
+            </div>
             <button id="btn-save-loan" onclick="addLoan()" class="w-full p-4 bg-gold text-black font-black rounded-xl uppercase">Guardar</button>
             <button onclick="closeModalRegistro()" class="w-full p-2 text-slate-500 text-xs uppercase">Cancelar</button>
         </div>
@@ -148,7 +151,7 @@
 <script>
     let db = JSON.parse(localStorage.getItem('perdomo_db')) || [];
     let rutaNames = JSON.parse(localStorage.getItem('perdomo_rutas')) || ["RUTA 1", "RUTA 2", "RUTA 3", "RUTA 4", "RUTA 5", "RUTA 6"];
-    let tempPhotos = [], rutaActual = 'TODOS', statusFilter = 'TODOS', renewingId = null;
+    let tempPhotos = [], rutaActual = 'TODOS', statusFilter = 'TODOS', editingId = null, renewingId = null;
 
     // Sesión
     function checkSession() {
@@ -180,6 +183,44 @@
         return 'ACTIVO';
     }
 
+    // MODAL EDICIÓN
+    function openEdit(id) {
+        const l = db.find(x => x.id === id);
+        editingId = id;
+        
+        document.getElementById('reg-title').innerText = "Editar Cliente";
+        document.getElementById('c-name').value = l.name;
+        document.getElementById('c-phone').value = l.phone;
+        document.getElementById('c-address').value = l.address;
+        document.getElementById('c-business').value = l.business;
+        document.getElementById('c-ruta').value = l.ruta;
+        
+        // Ocultar campos que no se editan (monto y firma)
+        document.getElementById('amount-container').classList.add('hidden');
+        document.getElementById('signature-container').classList.add('hidden');
+        
+        document.getElementById('btn-save-loan').innerText = "Guardar Cambios";
+        document.getElementById('btn-save-loan').onclick = saveEdit;
+        document.getElementById('modal-registro').classList.remove('hidden');
+    }
+
+    function saveEdit() {
+        const idx = db.findIndex(x => x.id === editingId);
+        if(idx === -1) return;
+
+        db[idx].name = document.getElementById('c-name').value.toUpperCase();
+        db[idx].phone = document.getElementById('c-phone').value;
+        db[idx].address = document.getElementById('c-address').value;
+        db[idx].business = document.getElementById('c-business').value.toUpperCase();
+        db[idx].ruta = document.getElementById('c-ruta').value;
+        
+        if(tempPhotos.length > 0) db[idx].photos = [...tempPhotos];
+
+        localStorage.setItem('perdomo_db', JSON.stringify(db));
+        closeModalRegistro();
+        render();
+    }
+
     // Pagos
     function openPayModal(id) {
         const l = db.find(x => x.id === id);
@@ -208,7 +249,7 @@
         closeModalPago(); showTicket(l, p); render(); updateStats();
     }
 
-    // LÓGICA DE RENOVACIÓN
+    // RENOVACIÓN
     function openRenew(id) {
         const l = db.find(x => x.id === id);
         renewingId = id;
@@ -219,21 +260,16 @@
         document.getElementById('c-phone').value = l.phone;
         document.getElementById('c-address').value = l.address;
         document.getElementById('c-business').value = l.business;
-        document.getElementById('c-amount').placeholder = `Se restará deuda: RD$ ${deudaPendiente}`;
+        document.getElementById('c-amount').placeholder = `Deducir: RD$ ${deudaPendiente}`;
         
-        document.getElementById('btn-save-loan').innerText = "Procesar Renovación";
+        document.getElementById('btn-save-loan').innerText = "Confirmar Renovación";
         document.getElementById('btn-save-loan').onclick = () => confirmRenew(deudaPendiente);
         document.getElementById('modal-registro').classList.remove('hidden');
     }
 
     function confirmRenew(deuda) {
         const nuevoMonto = parseFloat(document.getElementById('c-amount').value);
-        if(!nuevoMonto || nuevoMonto <= deuda) return alert("El monto debe cubrir la deuda de RD$ " + deuda);
-        
-        const entregaEfectivo = nuevoMonto - deuda;
-        alert(`RENOVACIÓN:\nNuevo Préstamo: RD$ ${nuevoMonto}\nMenos Deuda Anterior: RD$ ${deuda}\nENTREGAR AL CLIENTE: RD$ ${entregaEfectivo}`);
-        
-        // Eliminar el actual y crear el nuevo
+        if(!nuevoMonto || nuevoMonto <= deuda) return alert("Monto insuficiente");
         db = db.filter(x => x.id !== renewingId);
         addLoan();
     }
@@ -255,10 +291,10 @@
             list.innerHTML += `
             <div class="bg-slate-900 p-5 rounded-[2.5rem] border border-slate-800">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="flex gap-3">
+                    <div class="flex gap-3" onclick="openEdit(${l.id})">
                         <img src="${l.photos[0] || ''}" class="w-12 h-12 rounded-2xl object-cover bg-black">
                         <div>
-                            <h4 class="font-black text-white text-xs uppercase italic">${l.name}</h4>
+                            <h4 class="font-black text-white text-xs uppercase italic">${l.name} ✏️</h4>
                             <span class="text-[8px] font-black px-2 py-0.5 rounded text-black uppercase" style="background-color: ${color}">${status}</span>
                         </div>
                     </div>
@@ -353,13 +389,23 @@
     }
     function deleteClient(id) { if(confirm("¿Eliminar?")) { db = db.filter(x => x.id !== id); localStorage.setItem('perdomo_db', JSON.stringify(db)); render(); updateStats(); } }
     function closeModal() { document.getElementById('t-modal').classList.add('hidden'); }
+    
     function closeModalRegistro() { 
         document.getElementById('modal-registro').classList.add('hidden'); 
+        editingId = null;
         renewingId = null;
+        tempPhotos = [];
+        document.getElementById('photo-preview-container').innerHTML = '';
         document.getElementById('reg-title').innerText = "Nuevo Expediente";
         document.getElementById('btn-save-loan').innerText = "Guardar";
         document.getElementById('btn-save-loan').onclick = addLoan;
+        document.getElementById('amount-container').classList.remove('hidden');
+        document.getElementById('signature-container').classList.remove('hidden');
+        // Reset form
+        ['c-name', 'c-phone', 'c-address', 'c-business', 'c-amount', 'c-income'].forEach(id => document.getElementById(id).value = '');
+        ctx.clearRect(0,0,canvas.width, canvas.height);
     }
+
     function saveRutaNames() {
         rutaNames = [];
         for(let i=0; i<6; i++) rutaNames.push(document.getElementById(`edit-ruta-${i}`).value.toUpperCase() || `RUTA ${i+1}`);
