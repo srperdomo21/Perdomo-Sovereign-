@@ -1,459 +1,531 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sovereign Capital - Pro</title>
+    <title>Sovereign Capital - Pro v7.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { -webkit-tap-highlight-color: transparent; background-color: #000; color: white; }
+        body { -webkit-tap-highlight-color: transparent; background-color: #000; color: white; font-family: system-ui, sans-serif; overflow-x: hidden; }
         .bg-gold { background-color: #D4AF37; }
         .text-gold { color: #D4AF37; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .btn-status { padding: 8px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid #334155; transition: all 0.3s; }
-        .status-activo.active { background: #22c55e; color: #000; border-color: #22c55e; }
-        .status-atraso.active { background: #eab308; color: #000; border-color: #eab308; }
-        .status-vencido.active { background: #ef4444; color: #000; border-color: #ef4444; }
-        .status-saldado.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-        
-        canvas { border: 2px dashed #334155; background: #111; touch-action: none; border-radius: 1rem; }
-        .photo-preview { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; border: 1px solid #D4AF37; }
-        .btn-ruta.active { background: #D4AF37; color: black; font-weight: 900; }
-        
-        @media print {
-            body * { visibility: hidden; }
-            #ticket-printable, #ticket-printable * { visibility: visible; }
-            #ticket-printable { position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
-        }
-
-        .ticket-container { font-family: 'Courier New', Courier, monospace; color: #000; text-align: center; width: 100%; max-width: 300px; margin: 0 auto; padding: 10px; }
-        .ticket-header { border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-        .ticket-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; }
-        .ticket-body { text-align: left; font-size: 13px; margin: 15px 0; }
-        .ticket-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .ticket-amount { background: #000; color: #fff !important; padding: 8px; text-align: center; font-size: 22px; font-weight: bold; margin: 15px 0; -webkit-print-color-adjust: exact; }
-        .sig-img { width: 140px; margin: 10px auto; display: block; border-bottom: 1px solid #000; }
+        .btn-status { padding: 8px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid #1e293b; transition: 0.2s; white-space: nowrap; }
+        .btn-status.active { background: #D4AF37; color: #000; border-color: #D4AF37; }
+        .cuota-card { height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; border: 1px solid #1e293b; }
+        .cuota-pagada { background-color: #D4AF37; color: #000; border: none; }
+        .cuota-pendiente { background-color: #0f172a; color: #475569; }
+        .cuota-atraso-critico { background-color: #ef4444 !important; color: white !important; animation: blink 1.5s infinite; }
+        .cuota-vencida { border: 1px solid #ef4444; color: #ef4444; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        canvas { border: 2px dashed #334155; background: #111; border-radius: 1.5rem; width: 100%; touch-action: none; }
+        .stat-card { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid #1e293b; padding: 12px; border-radius: 20px; }
+        .btn-ruta.active { background-color: #D4AF37; color: #000; border-color: #D4AF37; }
     </style>
 </head>
-<body class="font-sans min-h-screen pb-24">
+<body class="min-h-screen pb-24">
 
-<div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black p-6">
+<div id="login-screen" class="fixed inset-0 z-[150] flex items-center justify-center bg-black p-6">
     <div class="w-full max-w-sm text-center">
-        <h1 class="text-3xl font-black text-gold uppercase mb-2 italic">Emanuel Perdomo</h1>
-        <p class="text-[10px] tracking-[0.4em] mb-10 text-slate-400 uppercase italic">Sovereign Capital</p>
-        <div class="space-y-4">
-            <input type="text" id="user" placeholder="Usuario" class="w-full p-5 rounded-2xl bg-slate-900 border border-slate-800 outline-none text-center">
-            <input type="password" id="pass" placeholder="Contraseña" class="w-full p-5 rounded-2xl bg-slate-900 border border-slate-800 outline-none text-center">
-            <button onclick="login()" class="w-full p-5 bg-gold text-black font-extrabold rounded-2xl uppercase tracking-widest active:scale-95 transition-all">Entrar</button>
-        </div>
+        <h1 class="text-3xl font-black text-gold uppercase mb-10 italic">Sovereign Capital</h1>
+        <input type="password" id="pass" placeholder="••••" class="w-full p-5 rounded-2xl bg-slate-900 border border-slate-800 outline-none text-center mb-4 text-white">
+        <button onclick="login()" class="w-full p-5 bg-gold text-black font-extrabold rounded-2xl uppercase italic">Entrar</button>
     </div>
 </div>
 
 <div id="app-content" class="hidden">
-    <header class="p-6 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-black z-40">
-        <div>
-            <h2 class="font-black text-gold uppercase text-xl italic leading-none">SOVEREIGN</h2>
-            <p class="text-[9px] text-slate-400 mt-1 uppercase italic">Hoy: <span id="daily-sum-head" class="text-white font-bold italic">RD$ 0</span></p>
+    <header class="p-5 border-b border-slate-800 sticky top-0 bg-black z-40">
+        <div class="flex justify-between items-center mb-5">
+            <div>
+                <h2 class="font-black text-gold uppercase italic leading-none text-xl">SOVEREIGN</h2>
+                <button onclick="openModalConfig()" class="text-[8px] text-slate-500 font-bold mt-1 uppercase italic underline">Configurar Rutas</button>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="openModalGastos()" class="bg-rose-900/40 text-rose-500 px-3 py-2 rounded-xl text-[10px] font-black border border-rose-500/20 italic uppercase">Gastos</button>
+                <button onclick="openModalRegistro()" class="bg-gold text-black px-5 py-2 rounded-xl font-black shadow-lg shadow-gold/20">+</button>
+            </div>
         </div>
-        <div class="flex gap-2">
-            <button onclick="toggleConfig()" class="bg-slate-800 p-3 rounded-xl">⚙️</button>
-            <button onclick="document.getElementById('modal-registro').classList.remove('hidden')" class="bg-gold text-black p-3 rounded-xl font-bold shadow-lg">+</button>
+
+        <div class="grid grid-cols-3 gap-2 mb-4 italic text-center">
+            <div class="stat-card"><p class="text-[7px] text-slate-500 font-black uppercase">Cobrado</p><p id="stat-cobrado-hoy" class="text-xs font-black text-green-500">RD$ 0</p></div>
+            <div class="stat-card"><p class="text-[7px] text-slate-500 font-black uppercase">Gastos</p><p id="stat-gastos-hoy" class="text-xs font-black text-rose-500">RD$ 0</p></div>
+            <div class="stat-card border-gold/50 bg-gold/5"><p class="text-[7px] text-gold font-black uppercase">En Caja</p><p id="stat-caja-hoy" class="text-xs font-black text-white">RD$ 0</p></div>
+            <div class="stat-card col-span-3 py-2 text-center border-slate-700">
+                <p class="text-[7px] text-slate-500 font-black uppercase">Capital en la Calle</p>
+                <p id="stat-calle" class="text-lg font-black text-gold">RD$ 0</p>
+            </div>
+        </div>
+        
+        <div id="ruta-filter-container" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 italic"></div>
+
+        <div class="flex gap-2 overflow-x-auto no-scrollbar italic border-t border-slate-900 pt-3">
+            <button onclick="setStatusFilter('TODOS')" id="f-todos" class="btn-status active">Todos</button>
+            <button onclick="setStatusFilter('ACTIVO')" id="f-activo" class="btn-status text-green-500">Activos</button>
+            <button onclick="setStatusFilter('ATRASO')" id="f-atraso" class="btn-status text-yellow-500">Atraso</button>
+            <button onclick="setStatusFilter('VENCIDO')" id="f-vencido" class="btn-status text-rose-500">Vencidos</button>
+            <button onclick="setStatusFilter('SALDADO')" id="f-saldado" class="btn-status text-blue-500">Saldados</button>
         </div>
     </header>
 
-    <div id="ruta-filter-container" class="p-4 bg-black flex gap-2 overflow-x-auto no-scrollbar sticky top-[80px] z-30"></div>
-
-    <div class="px-4 pb-4 bg-black border-b border-slate-800 flex gap-2 sticky top-[145px] z-30 overflow-x-auto no-scrollbar">
-        <button onclick="setStatusFilter('TODOS')" id="f-todos" class="btn-status active">Todos</button>
-        <button onclick="setStatusFilter('ACTIVO')" id="f-activo" class="btn-status status-activo text-green-500">Activos</button>
-        <button onclick="setStatusFilter('ATRASO')" id="f-atraso" class="btn-status status-atraso text-yellow-500">Atraso</button>
-        <button onclick="setStatusFilter('VENCIDO')" id="f-vencido" class="btn-status status-vencido text-red-500">Vencidos</button>
-        <button onclick="setStatusFilter('SALDADO')" id="f-saldado" class="btn-status status-saldado text-blue-500">Salientes</button>
-    </div>
-
     <main class="p-4 space-y-6">
-        <input type="text" id="search-bar" oninput="render()" placeholder="🔍 Buscar cliente..." class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 text-sm outline-none">
-        <div id="loan-list" class="space-y-4"></div>
+        <input type="text" id="search-bar" oninput="render()" placeholder="🔍 Buscar cliente o negocio..." class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 text-sm outline-none italic">
+        <div id="loan-list" class="space-y-6"></div>
     </main>
 
-    <div id="modal-pago" class="hidden fixed inset-0 z-[110] bg-black/90 flex items-center justify-center p-6">
-        <div class="bg-slate-900 p-6 rounded-[2.5rem] border border-slate-800 w-full max-w-sm text-center">
-            <h3 class="text-gold font-black uppercase text-xs italic mb-4">Registrar Cobro</h3>
-            <p id="pago-client-name" class="text-white font-bold mb-2"></p>
-            <p id="pago-cuota-info" class="text-slate-400 text-[10px] mb-4"></p>
-            <input type="number" id="pago-monto" class="w-full p-5 rounded-2xl bg-black border border-slate-800 text-center text-2xl font-bold text-white outline-none mb-4" placeholder="0.00">
-            <button id="pago-confirm-btn" class="w-full p-4 bg-gold text-black font-black rounded-xl uppercase mb-2">Procesar Pago</button>
-            <button onclick="closeModalPago()" class="w-full p-2 text-slate-500 text-xs uppercase">Cancelar</button>
+    <div id="modal-gastos" class="hidden fixed inset-0 z-[120] bg-black/95 p-6 italic">
+        <div class="bg-slate-900 p-6 rounded-[2.5rem] border border-slate-800 max-w-md mx-auto space-y-4">
+            <h3 class="text-rose-500 font-black uppercase text-center">Registrar Gasto</h3>
+            <input type="text" id="g-desc" placeholder="Descripción" class="w-full p-4 rounded-xl bg-black border border-slate-800 outline-none text-white">
+            <input type="number" id="g-monto" placeholder="Monto RD$" class="w-full p-4 rounded-xl bg-black border border-slate-800 outline-none text-white">
+            <button onclick="saveGasto()" class="w-full p-5 bg-rose-600 text-white font-black rounded-2xl uppercase">Guardar Gasto</button>
+            <div class="pt-4 border-t border-slate-800">
+                <p class="text-[10px] text-slate-500 font-black uppercase mb-2">Gastos de Hoy</p>
+                <div id="lista-gastos" class="space-y-2 max-h-40 overflow-y-auto"></div>
+            </div>
+            <button onclick="closeModalGastos()" class="w-full p-2 text-slate-500 text-[10px] uppercase font-bold text-center">Cerrar</button>
         </div>
     </div>
 
-    <div id="modal-registro" class="hidden fixed inset-0 z-50 bg-black p-4 overflow-y-auto">
-        <div class="bg-slate-900 p-6 rounded-[2.5rem] border border-slate-800 space-y-4 max-w-md mx-auto mb-10">
-            <h3 id="reg-title" class="text-gold font-black uppercase text-xs italic text-center underline">Nuevo Expediente</h3>
-            <select id="c-ruta" class="w-full p-3 rounded-xl bg-black border border-slate-800 text-gold font-bold uppercase text-xs"></select>
-            <input type="text" id="c-name" placeholder="Nombre completo" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-            <input type="text" id="c-phone" placeholder="WhatsApp" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-            <input type="text" id="c-address" placeholder="Dirección" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-            <input type="text" id="c-business" placeholder="Negocio" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-            <div class="grid grid-cols-2 gap-2" id="amount-container">
-                <input type="number" id="c-income" placeholder="Ingresos RD$" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
-                <input type="number" id="c-amount" placeholder="Préstamo RD$" class="w-full p-3 rounded-xl bg-black border border-slate-800 outline-none text-sm">
+    <div id="modal-config" class="hidden fixed inset-0 z-[130] bg-black p-6 italic overflow-y-auto">
+        <div class="bg-slate-900 p-6 rounded-[2.5rem] border border-slate-800 max-w-md mx-auto space-y-4 mt-10">
+            <h3 class="text-gold font-black uppercase text-center">Editar Nombres de Rutas</h3>
+            <div id="config-rutas-list" class="space-y-2"></div>
+            <button onclick="saveRutaNames()" class="w-full p-5 bg-gold text-black font-black rounded-2xl uppercase">Guardar Cambios</button>
+            <button onclick="document.getElementById('modal-config').classList.add('hidden')" class="w-full p-2 text-slate-500 text-[10px] uppercase font-bold text-center">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modal-renovacion" class="hidden fixed inset-0 z-[140] bg-black/95 flex items-center justify-center p-6 italic">
+        <div class="bg-slate-900 p-8 rounded-[3rem] border border-slate-800 w-full max-w-sm">
+            <h3 class="text-gold font-black uppercase text-center mb-4 leading-tight">Sistema de<br>Renovación</h3>
+            <p id="renov-info-text" class="text-[11px] text-slate-300 mb-6 text-center uppercase leading-relaxed"></p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[8px] text-slate-500 font-black uppercase ml-2">Nuevo Préstamo RD$</label>
+                    <input type="number" id="renov-nuevo-monto" class="w-full p-5 rounded-2xl bg-black border border-slate-800 text-gold font-black outline-none text-xl text-center">
+                </div>
+                <div class="flex items-center justify-center gap-3 p-4 bg-black/50 rounded-2xl border border-slate-800">
+                    <input type="checkbox" id="renov-edit-profile" class="w-5 h-5 accent-gold">
+                    <label for="renov-edit-profile" class="text-[10px] text-white uppercase font-black">¿Editar cliente después?</label>
+                </div>
             </div>
-            <div class="space-y-2">
-                <div id="photo-preview-container" class="flex gap-2 overflow-x-auto py-1"></div>
-                <button onclick="document.getElementById('c-photo-input').click()" class="w-full p-3 bg-slate-800 rounded-xl text-[10px] font-bold uppercase italic">📸 Fotos</button>
+
+            <div class="grid grid-cols-2 gap-2 mt-8">
+                <button id="renov-confirm-btn" class="p-5 bg-gold text-black font-black rounded-2xl uppercase text-[10px]">Confirmar</button>
+                <button onclick="document.getElementById('modal-renovacion').classList.add('hidden')" class="p-5 bg-slate-800 text-white font-black rounded-2xl uppercase text-[10px]">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-registro" class="hidden fixed inset-0 z-[100] bg-black p-4 overflow-y-auto italic">
+        <div class="bg-slate-900 p-6 rounded-[2.5rem] border border-slate-800 space-y-4 max-w-md mx-auto mt-4">
+            <h3 id="modal-title" class="text-gold font-black uppercase text-xs text-center italic">Expediente</h3>
+            
+            <div id="loan-profile-info" class="hidden grid grid-cols-2 gap-2 bg-black p-4 rounded-2xl border border-slate-800 italic text-center">
+                <div><p class="text-[7px] text-slate-500 uppercase font-black">Préstamo</p><p id="p-total" class="text-xs font-black text-white"></p></div>
+                <div><p class="text-[7px] text-slate-500 uppercase font-black">Cuota Semanal</p><p id="p-cuota" class="text-xs font-black text-gold"></p></div>
+            </div>
+
+            <input type="hidden" id="edit-id">
+            <select id="c-ruta" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-gold text-xs font-bold uppercase"></select>
+            <input type="text" id="c-name" placeholder="Nombre completo" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-sm outline-none text-white">
+            <input type="text" id="c-phone" placeholder="WhatsApp (Ej: 829...)" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-sm outline-none text-white">
+            <input type="text" id="c-business" placeholder="Negocio" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-sm outline-none text-white">
+            <input type="text" id="c-address" placeholder="Dirección" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-sm outline-none text-white">
+            
+            <div id="loan-inputs-group">
+                <input type="number" id="c-amount" placeholder="Monto RD$ (Capital)" class="w-full p-4 rounded-xl bg-black border border-slate-800 text-sm outline-none text-white">
+            </div>
+
+            <div class="p-2 border border-slate-800 rounded-xl text-center bg-black/30">
+                <div id="photo-preview" class="flex flex-wrap gap-2 mb-2 justify-center"></div>
+                <button onclick="document.getElementById('c-photo-input').click()" class="w-full py-3 bg-slate-800 rounded-xl text-[10px] font-black uppercase">Foto Perfil/Negocio</button>
                 <input type="file" id="c-photo-input" capture="camera" accept="image/*" class="hidden" onchange="handlePhotos(this)">
             </div>
-            <div id="signature-container">
-                <p class="text-[9px] text-slate-500 uppercase text-center">Firma Digital</p>
-                <canvas id="sig-canvas" width="300" height="150" class="w-full"></canvas>
+            
+            <p class="text-[7px] text-slate-500 font-black uppercase ml-2 italic">Firma del Cliente:</p>
+            <canvas id="sig-canvas" width="300" height="150"></canvas>
+            
+            <div id="payments-history" class="hidden space-y-2 max-h-40 overflow-y-auto p-2 bg-black rounded-xl border border-slate-800">
+                <p class="text-[8px] text-slate-500 font-bold uppercase mb-2 italic">Historial de Pagos</p>
+                <div id="history-list"></div>
             </div>
-            <button id="btn-save-loan" onclick="addLoan()" class="w-full p-4 bg-gold text-black font-black rounded-xl uppercase">Guardar</button>
-            <button onclick="closeModalRegistro()" class="w-full p-2 text-slate-500 text-xs uppercase">Cancelar</button>
+            
+            <button onclick="saveLoan()" class="w-full p-5 bg-gold text-black font-black rounded-2xl uppercase italic">Guardar Cambios</button>
+            <button onclick="closeModalRegistro()" class="w-full p-2 text-slate-500 text-[10px] uppercase font-bold text-center">Cerrar</button>
         </div>
     </div>
 
-    <div id="modal-config" class="hidden fixed inset-0 z-50 bg-black p-6 overflow-y-auto">
-        <div class="max-w-md mx-auto space-y-6">
-            <h3 class="text-gold font-black uppercase italic">Configuración</h3>
-            <button onclick="showReceiptsHistory()" class="w-full p-4 bg-slate-800 text-gold font-black rounded-xl uppercase text-xs italic border border-gold/30">🧾 Ver Todos los Recibos</button>
-            <button onclick="exportData()" class="w-full p-4 bg-green-600 text-white font-black rounded-xl uppercase text-xs italic">💾 Exportar Backup</button>
-            <div id="config-inputs" class="space-y-3 pt-4 border-t border-slate-800"></div>
-            <button onclick="saveRutaNames()" class="w-full p-4 bg-gold text-black font-black rounded-2xl uppercase text-xs">Guardar Rutas</button>
-            <button onclick="toggleConfig()" class="w-full p-4 text-slate-400 text-xs uppercase">Cerrar</button>
-        </div>
-    </div>
-
-    <div id="modal-historial" class="hidden fixed inset-0 z-[130] bg-black p-6 overflow-y-auto">
-        <div class="max-w-md mx-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-gold font-black uppercase italic">Historial de Recibos</h3>
-                <button onclick="document.getElementById('modal-historial').classList.add('hidden')" class="text-white text-xl">✕</button>
+    <div id="modal-pago" class="hidden fixed inset-0 z-[110] bg-black/95 flex items-center justify-center p-6 italic">
+        <div class="bg-slate-900 p-8 rounded-[3rem] border border-slate-800 w-full max-w-sm text-center">
+            <p id="pago-client-name" class="text-white font-bold text-lg mb-6 uppercase italic"></p>
+            <input type="number" id="pago-monto" class="w-full p-6 rounded-3xl bg-black border border-slate-800 text-center text-4xl font-black text-white mb-8 outline-none">
+            <div class="grid grid-cols-2 gap-2">
+                <button id="pago-confirm-btn" class="p-4 bg-gold text-black font-black rounded-2xl uppercase text-[10px] italic">Cobrar Solo</button>
+                <button id="pago-print-btn" class="p-4 bg-white text-black font-black rounded-2xl uppercase text-[10px] italic shadow-lg">Cobrar + Recibo</button>
             </div>
-            <div id="receipts-list" class="space-y-3"></div>
+            <button onclick="document.getElementById('modal-pago').classList.add('hidden')" class="w-full p-4 text-slate-500 text-[10px] uppercase font-bold mt-4">Cerrar</button>
         </div>
     </div>
 </div>
 
-<div id="t-modal" class="hidden fixed inset-0 z-[120] bg-black/95 flex items-center justify-center p-4">
-    <div class="bg-white text-black p-4 rounded-[2rem] w-full max-w-[340px]">
-        <div id="ticket-printable"><div id="ticket-body"></div></div>
-        <button onclick="window.print()" class="w-full p-4 bg-black text-white rounded-2xl mt-4 font-bold text-xs uppercase italic">🖨️ Imprimir</button>
-        <button onclick="closeModal()" class="w-full p-3 text-slate-400 text-[10px] mt-2 font-bold uppercase">Cerrar</button>
-    </div>
-</div>
+<canvas id="receipt-canvas" width="400" height="720" style="display:none;"></canvas>
 
 <script>
     let db = JSON.parse(localStorage.getItem('perdomo_db')) || [];
+    let gastos = JSON.parse(localStorage.getItem('perdomo_gastos')) || [];
     let rutaNames = JSON.parse(localStorage.getItem('perdomo_rutas')) || ["RUTA 1", "RUTA 2", "RUTA 3", "RUTA 4", "RUTA 5", "RUTA 6"];
-    let tempPhotos = [], rutaActual = 'TODOS', statusFilter = 'TODOS', editingId = null, renewingId = null;
+    let tempPhotos = [], rutaActual = 'TODOS', statusFilter = 'TODOS';
+    
+    // --- LINK DEL LOGO ---
+    const logoURL = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // Cámbialo por tu logo real
 
-    // Sesión
-    function checkSession() {
-        const last = localStorage.getItem('last_login_time');
-        if (last && (Date.now() - parseInt(last)) / 3600000 < 2) showApp();
-    }
-    function login() {
-        if(document.getElementById('user').value === "SR Perdomo" && document.getElementById('pass').value === "Perdomo21") {
-            localStorage.setItem('last_login_time', Date.now().toString());
-            showApp();
-        }
-    }
-    function showApp() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-content').classList.remove('hidden');
-        initUI(); render(); updateStats();
-    }
-    window.onload = checkSession;
+    function login() { if(document.getElementById('pass').value === "Perdomo21") { localStorage.setItem('last_login_time', Date.now()); showApp(); } }
+    function showApp() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); initUI(); render(); updateStats(); initCanvas(); }
 
-    // Status
-    function getLoanStatus(loan) {
-        if (loan.payments.length >= 13) return 'SALDADO';
+    function getLoanInfo(loan) {
         const now = Date.now();
-        const MS_PER_WEEK = 604800000;
-        const semanasTranscurridas = Math.floor((now - loan.startDate) / MS_PER_WEEK);
-        if (semanasTranscurridas >= 13) return 'VENCIDO';
-        const ultimoPagoTS = loan.payments.length > 0 ? loan.payments[loan.payments.length - 1].timestamp : loan.startDate;
-        if ((now - ultimoPagoTS) / MS_PER_WEEK >= 3) return 'ATRASO';
-        return 'ACTIVO';
+        const semanasDesdeInicio = Math.floor((now - loan.startDate) / 604800000);
+        const ultimoPago = loan.payments.length > 0 ? loan.payments[loan.payments.length - 1].timestamp : loan.startDate;
+        const semanasSinPagar = Math.floor((now - ultimoPago) / 604800000);
+        let status = 'ACTIVO';
+        if (loan.payments.length >= 13) status = 'SALDADO';
+        else if (semanasDesdeInicio > 13) status = 'VENCIDO';
+        else if (semanasSinPagar >= 3) status = 'ATRASO';
+        return { status, semanasSinPagar };
     }
 
-    // MODAL EDICIÓN
-    function openEdit(id) {
-        const l = db.find(x => x.id === id);
-        editingId = id;
-        
-        document.getElementById('reg-title').innerText = "Editar Cliente";
-        document.getElementById('c-name').value = l.name;
-        document.getElementById('c-phone').value = l.phone;
-        document.getElementById('c-address').value = l.address;
-        document.getElementById('c-business').value = l.business;
-        document.getElementById('c-ruta').value = l.ruta;
-        
-        // Ocultar campos que no se editan (monto y firma)
-        document.getElementById('amount-container').classList.add('hidden');
-        document.getElementById('signature-container').classList.add('hidden');
-        
-        document.getElementById('btn-save-loan').innerText = "Guardar Cambios";
-        document.getElementById('btn-save-loan').onclick = saveEdit;
-        document.getElementById('modal-registro').classList.remove('hidden');
+    // --- CONFIGURACIÓN DE RUTAS ---
+    function openModalConfig() {
+        const list = document.getElementById('config-rutas-list');
+        list.innerHTML = rutaNames.map((n, i) => `
+            <div class="flex gap-2">
+                <span class="text-gold font-black self-center text-xs w-4">${i + 1}</span>
+                <input type="text" value="${n}" class="ruta-input w-full p-3 rounded-xl bg-black border border-slate-800 text-white text-xs outline-none uppercase">
+            </div>
+        `).join('');
+        document.getElementById('modal-config').classList.remove('hidden');
     }
 
-    function saveEdit() {
-        const idx = db.findIndex(x => x.id === editingId);
-        if(idx === -1) return;
-
-        db[idx].name = document.getElementById('c-name').value.toUpperCase();
-        db[idx].phone = document.getElementById('c-phone').value;
-        db[idx].address = document.getElementById('c-address').value;
-        db[idx].business = document.getElementById('c-business').value.toUpperCase();
-        db[idx].ruta = document.getElementById('c-ruta').value;
-        
-        if(tempPhotos.length > 0) db[idx].photos = [...tempPhotos];
-
-        localStorage.setItem('perdomo_db', JSON.stringify(db));
-        closeModalRegistro();
-        render();
-    }
-
-    // Pagos
-    function openPayModal(id) {
-        const l = db.find(x => x.id === id);
-        document.getElementById('pago-client-name').innerText = l.name;
-        document.getElementById('pago-cuota-info').innerText = `Cuota Normal: RD$ ${l.perWeek.toLocaleString()}`;
-        document.getElementById('pago-monto').value = l.perWeek;
-        document.getElementById('pago-confirm-btn').onclick = () => processFlexiblePay(l.id);
-        document.getElementById('modal-pago').classList.remove('hidden');
-    }
-    function closeModalPago() { document.getElementById('modal-pago').classList.add('hidden'); }
-
-    function processFlexiblePay(id) {
-        const l = db.find(x => x.id === id);
-        const monto = parseFloat(document.getElementById('pago-monto').value);
-        if (!monto || monto <= 0) return;
-
-        const numCuotas = Math.floor(monto / l.perWeek) || 1;
-        const p = { pid: Date.now(), week: l.payments.length + 1, date: new Date().toLocaleDateString(), timestamp: Date.now(), amount: monto, cuotasPagadas: numCuotas };
-
-        for(let i=0; i < numCuotas; i++) {
-            if(l.payments.length < 13) {
-                l.payments.push(i === 0 ? p : { ...p, pid: Date.now() + i, week: l.payments.length + 1, hidden: true });
-            }
+    function saveRutaNames() {
+        const inputs = document.querySelectorAll('.ruta-input');
+        const nuevosNombres = [];
+        inputs.forEach(input => { if(input.value.trim() !== "") nuevosNombres.push(input.value.toUpperCase()); });
+        if(nuevosNombres.length > 0) {
+            rutaNames = nuevosNombres;
+            localStorage.setItem('perdomo_rutas', JSON.stringify(rutaNames));
+            initUI(); render();
+            document.getElementById('modal-config').classList.add('hidden');
         }
-        localStorage.setItem('perdomo_db', JSON.stringify(db));
-        closeModalPago(); showTicket(l, p); render(); updateStats();
     }
 
-    // RENOVACIÓN
-    function openRenew(id) {
+    // --- RENOVACIÓN ---
+    function renewLoan(id) {
         const l = db.find(x => x.id === id);
-        renewingId = id;
-        const deudaPendiente = (13 - l.payments.length) * l.perWeek;
-        
-        document.getElementById('reg-title').innerText = "Renovar Préstamo";
-        document.getElementById('c-name').value = l.name;
-        document.getElementById('c-phone').value = l.phone;
-        document.getElementById('c-address').value = l.address;
-        document.getElementById('c-business').value = l.business;
-        document.getElementById('c-amount').placeholder = `Deducir: RD$ ${deudaPendiente}`;
-        
-        document.getElementById('btn-save-loan').innerText = "Confirmar Renovación";
-        document.getElementById('btn-save-loan').onclick = () => confirmRenew(deudaPendiente);
-        document.getElementById('modal-registro').classList.remove('hidden');
+        const balancePendiente = (13 - l.payments.length) * l.perWeek;
+        document.getElementById('renov-info-text').innerHTML = `Deuda Pendiente: <span class="text-rose-500 font-black">RD$ ${balancePendiente.toLocaleString()}</span><br><span class="text-[8px]">Se descontará automáticamente del nuevo préstamo</span>`;
+        document.getElementById('renov-nuevo-monto').value = l.total; 
+        document.getElementById('modal-renovacion').classList.remove('hidden');
+
+        document.getElementById('renov-confirm-btn').onclick = () => {
+            const nuevoMonto = parseFloat(document.getElementById('renov-nuevo-monto').value);
+            if(!nuevoMonto) return;
+            const netoAEntregar = nuevoMonto - balancePendiente;
+            l.total = nuevoMonto;
+            l.perWeek = nuevoMonto / 10;
+            l.payments = [];
+            l.startDate = Date.now();
+            localStorage.setItem('perdomo_db', JSON.stringify(db));
+            document.getElementById('modal-renovacion').classList.add('hidden');
+            generateRenovationReceipt(l, balancePendiente, nuevoMonto, netoAEntregar);
+            render(); updateStats();
+        };
     }
 
-    function confirmRenew(deuda) {
-        const nuevoMonto = parseFloat(document.getElementById('c-amount').value);
-        if(!nuevoMonto || nuevoMonto <= deuda) return alert("Monto insuficiente");
-        db = db.filter(x => x.id !== renewingId);
-        addLoan();
+    // --- RECIBOS CON LOGO ---
+    function generateRenovationReceipt(l, saldoAnterior, nuevoCapital, neto) {
+        const can = document.getElementById('receipt-canvas');
+        const cx = can.getContext('2d');
+        const fecha = new Date().toLocaleString();
+        const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = logoURL;
+
+        logoImg.onload = () => {
+            cx.fillStyle = "#FFFFFF"; cx.fillRect(0,0,400,720);
+            cx.drawImage(logoImg, 160, 20, 80, 80);
+            cx.fillStyle = "#000"; cx.textAlign = "center";
+            cx.font = "bold 26px sans-serif"; cx.fillText("SOVEREIGN CAPITAL", 200, 130);
+            cx.font = "bold 14px sans-serif"; cx.fillText("COMPROBANTE DE RENOVACIÓN", 200, 155);
+            cx.textAlign = "left"; cx.font = "12px sans-serif";
+            cx.fillText(`Fecha: ${fecha}`, 40, 190);
+            cx.fillText(`Cliente: ${l.name}`, 40, 210);
+            cx.strokeStyle = "#000"; cx.lineWidth = 2; cx.strokeRect(30, 230, 340, 180);
+            cx.font = "bold 14px sans-serif"; cx.fillText("DETALLE:", 40, 255);
+            cx.font = "14px sans-serif"; 
+            cx.fillText(`(+) Nuevo Capital:`, 50, 285);
+            cx.textAlign = "right"; cx.fillText(`RD$ ${nuevoCapital.toLocaleString()}`, 350, 285);
+            cx.textAlign = "left"; cx.fillStyle = "#CC0000";
+            cx.fillText(`(-) Saldo Anterior:`, 50, 315);
+            cx.textAlign = "right"; cx.fillText(`RD$ ${saldoAnterior.toLocaleString()}`, 350, 315);
+            cx.textAlign = "left"; cx.fillStyle = "#000"; cx.font = "bold 18px sans-serif";
+            cx.fillText(`NETO A ENTREGAR:`, 50, 370);
+            cx.textAlign = "right"; cx.fillText(`RD$ ${neto.toLocaleString()}`, 350, 370);
+            cx.textAlign = "center"; cx.font = "italic 11px sans-serif";
+            cx.fillText("Nueva cuota semanal: RD$ " + l.perWeek.toLocaleString(), 200, 430);
+
+            if(l.signature) {
+                const sig = new Image(); sig.src = l.signature;
+                sig.onload = () => {
+                    cx.drawImage(sig, 100, 480, 200, 70);
+                    cx.beginPath(); cx.moveTo(100, 550); cx.lineTo(300, 550); cx.stroke();
+                    cx.font = "10px sans-serif"; cx.fillText("Firma del Cliente", 200, 565);
+                    showReceiptWindow(can.toDataURL("image/png"), l, "Renovación");
+                };
+            } else { showReceiptWindow(can.toDataURL("image/png"), l, "Renovación"); }
+        };
     }
 
+    function generatePaymentReceipt(loanId, montoPagado) {
+        const l = db.find(x => x.id === loanId);
+        const can = document.getElementById('receipt-canvas');
+        const cx = can.getContext('2d');
+        const fecha = new Date().toLocaleString();
+        const balance = (13 - l.payments.length) * l.perWeek;
+        const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = logoURL;
+
+        logoImg.onload = () => {
+            cx.fillStyle = "#FFFFFF"; cx.fillRect(0,0,400,720);
+            cx.drawImage(logoImg, 165, 30, 70, 70);
+            cx.fillStyle = "#000"; cx.font = "bold 28px sans-serif"; cx.textAlign = "center";
+            cx.fillText("SOVEREIGN CAPITAL", 200, 130);
+            cx.font = "14px sans-serif"; cx.fillText("RECIBO DE PAGO", 200, 155);
+            cx.textAlign = "left"; cx.font = "12px sans-serif";
+            cx.fillText("Fecha: " + fecha, 40, 195);
+            cx.font = "bold 18px sans-serif";
+            cx.fillText("CLIENTE: " + l.name, 40, 235);
+            cx.font = "14px sans-serif";
+            cx.fillText("NEGOCIO: " + (l.business || "N/A"), 40, 265);
+            cx.strokeStyle = "#000"; cx.lineWidth = 1; cx.strokeRect(30, 295, 340, 160);
+            cx.font = "bold 16px sans-serif";
+            cx.fillText("PAGO RECIBIDO:", 50, 335);
+            cx.font = "bold 24px sans-serif";
+            cx.fillText("RD$ " + parseFloat(montoPagado).toLocaleString(), 50, 370);
+            cx.font = "14px sans-serif";
+            cx.fillText("Cuota: " + l.payments.length + " de 13", 50, 405);
+            cx.fillStyle = "#CC0000";
+            cx.fillText("DEUDA RESTANTE: RD$ " + balance.toLocaleString(), 50, 435);
+            cx.fillStyle = "#000";
+
+            if(l.signature) {
+                const sig = new Image(); sig.src = l.signature;
+                sig.onload = () => {
+                    cx.drawImage(sig, 100, 520, 200, 80);
+                    cx.beginPath(); cx.moveTo(100, 600); cx.lineTo(300, 600); cx.stroke();
+                    cx.textAlign = "center"; cx.font = "10px sans-serif"; cx.fillText("Firma del Cliente", 200, 615);
+                    showReceiptWindow(can.toDataURL("image/png"), l, "Pago de Cuota #" + l.payments.length);
+                };
+            } else { showReceiptWindow(can.toDataURL("image/png"), l, "Pago de Cuota #" + l.payments.length); }
+        };
+    }
+
+    function showReceiptWindow(dataURL, l, msg) {
+        const win = window.open();
+        const waMsg = encodeURIComponent(`*SOVEREIGN CAPITAL*\nHola ${l.name}, aquí tienes tu comprobante de ${msg}.\nBalance actual: RD$ ${((13 - l.payments.length) * l.perWeek).toLocaleString()}`);
+        win.document.write(`
+            <body style="margin:0; background:#0a0a0a; color:white; font-family:sans-serif; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh;">
+                <img src="${dataURL}" style="width:90%; max-width:400px; border-radius:10px; border:8px solid white; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+                <div style="margin-top:30px; display:grid; gap:15px; width:90%; max-width:400px;">
+                    <a href="https://wa.me/${l.phone.replace(/\D/g,'')}?text=${waMsg}" 
+                       style="background:#25D366; color:white; padding:20px; text-decoration:none; border-radius:15px; font-weight:bold; font-size:16px;">
+                       ENVIAR POR WHATSAPP
+                    </a>
+                    <button onclick="window.print()" style="background:white; color:black; border:none; padding:15px; border-radius:15px; font-weight:bold; font-size:14px; cursor:pointer;">
+                       IMPRIMIR / GUARDAR PDF
+                    </button>
+                    <button onclick="window.close()" style="color:#666; background:transparent; border:none; font-size:12px; font-weight:bold; text-transform:uppercase;">Cerrar Comprobante</button>
+                </div>
+            </body>
+        `);
+    }
+
+    // --- FUNCIONES CORE ---
     function render() {
         const query = document.getElementById('search-bar').value.toUpperCase();
         const list = document.getElementById('loan-list');
         list.innerHTML = "";
-        
-        db.filter(l => l.name.includes(query) && (rutaActual === 'TODOS' || l.ruta === rutaActual))
-          .filter(l => statusFilter === 'TODOS' || statusFilter === getLoanStatus(l))
-          .forEach(l => {
-            const status = getLoanStatus(l);
-            let color = "#22c55e"; 
-            if(status === 'ATRASO') color = "#eab308";
-            if(status === 'VENCIDO') color = "#ef4444";
-            if(status === 'SALDADO') color = "#3b82f6";
-
+        db.filter(l => {
+            const info = getLoanInfo(l);
+            return (l.name.includes(query) || (l.business && l.business.includes(query))) && 
+                   (rutaActual === 'TODOS' || l.ruta === rutaActual) && 
+                   (statusFilter === 'TODOS' || statusFilter === info.status);
+        }).forEach(l => {
+            const info = getLoanInfo(l);
+            const balance = (13 - l.payments.length) * l.perWeek;
             list.innerHTML += `
-            <div class="bg-slate-900 p-5 rounded-[2.5rem] border border-slate-800">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex gap-3" onclick="openEdit(${l.id})">
-                        <img src="${l.photos[0] || ''}" class="w-12 h-12 rounded-2xl object-cover bg-black">
+            <div class="bg-slate-900 p-6 rounded-[2.5rem] border ${info.status === 'VENCIDO' || info.semanasSinPagar >= 3 ? 'border-rose-900' : 'border-slate-800'} shadow-xl italic">
+                <div class="flex justify-between items-start mb-5 italic">
+                    <div class="flex gap-4" onclick="openEdit(${l.id})">
+                        <img src="${l.photos[0] || ''}" class="w-14 h-14 rounded-2xl object-cover bg-black border border-slate-800">
                         <div>
-                            <h4 class="font-black text-white text-xs uppercase italic">${l.name} ✏️</h4>
-                            <span class="text-[8px] font-black px-2 py-0.5 rounded text-black uppercase" style="background-color: ${color}">${status}</span>
+                            <h4 class="font-black text-white text-sm uppercase italic leading-tight">${l.name}</h4>
+                            <span class="text-[8px] font-black px-2 py-0.5 rounded mt-2 inline-block ${info.status === 'ATRASO' || info.semanasSinPagar >= 3 ? 'bg-rose-600 text-white' : info.status === 'SALDADO' ? 'bg-blue-600 text-white' : 'bg-green-500 text-black'} uppercase">${info.status} - ${l.ruta}</span>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-2">
-                        ${status !== 'SALDADO' ? `<button onclick="openPayModal(${l.id})" class="bg-white text-black font-black w-10 h-10 rounded-xl shadow-lg">✓</button>` : ''}
-                        ${l.payments.length >= 10 ? `<button onclick="openRenew(${l.id})" class="bg-blue-600 text-white font-black px-3 py-2 rounded-xl text-[9px] uppercase italic">Renovar</button>` : ''}
+                    ${info.status !== 'SALDADO' ? `<button onclick="openPayModal(${l.id})" class="bg-gold text-black font-black w-12 h-12 rounded-2xl shadow-xl italic">✓</button>` : ''}
+                </div>
+                <div class="grid grid-cols-7 gap-1.5 mb-5 italic">
+                    ${Array(13).fill().map((_, i) => `<div class="cuota-card ${l.payments[i] ? 'cuota-pagada' : (i === l.payments.length && info.semanasSinPagar >= 3) ? 'cuota-atraso-critico' : (info.status === 'VENCIDO' && i >= l.payments.length) ? 'cuota-vencida' : 'cuota-pendiente'} italic">${i+1}</div>`).join('')}
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-800 pt-4 italic">
+                    <div class="flex gap-4 italic text-[9px] font-black uppercase">
+                        <button onclick="deleteClient(${l.id})" class="text-rose-500/50 italic">Eliminar</button>
+                        ${(l.payments.length >= 10 || info.status === 'SALDADO') ? `<button onclick="renewLoan(${l.id})" class="text-green-500 animate-bounce">RENOVAR</button>` : ''}
                     </div>
-                </div>
-                <div class="grid grid-cols-13 gap-1 mb-4">
-                    ${Array(13).fill().map((_, i) => {
-                        const isPaid = i < l.payments.length;
-                        return `<div class="h-6 rounded-sm flex items-center justify-center text-[8px] font-bold ${isPaid ? '' : 'bg-black border border-slate-800 text-slate-600'}" style="background-color: ${isPaid ? color : ''}; color: ${isPaid ? '#000' : ''}">${i + 1}</div>`
-                    }).join('')}
-                </div>
-                <div class="flex justify-between items-center text-[9px] border-t border-slate-800 pt-3">
-                    <button onclick="deleteClient(${l.id})" class="text-red-600 font-bold uppercase italic">Eliminar</button>
-                    <span class="text-white font-black italic">Resta: RD$ ${((13 - l.payments.length) * l.perWeek).toLocaleString()}</span>
+                    <span class="text-[10px] font-black text-slate-400 uppercase italic">Debe: <span class="text-gold">RD$ ${balance.toLocaleString()}</span></span>
                 </div>
             </div>`;
         });
     }
 
-    function showTicket(loan, p) {
-        const now = new Date();
-        const hora = now.getHours() + ":" + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-        document.getElementById('ticket-body').innerHTML = `
-            <div class="ticket-container">
-                <div class="ticket-header">
-                    <h2 class="ticket-title">SOVEREIGN CAPITAL</h2>
-                    <p class="ticket-info">RNC: 001-0000000-0 | Tel: (809) 000-0000</p>
-                    <p class="ticket-info">Fecha: ${p.date} | Hora: ${hora}</p>
-                </div>
-                <div class="ticket-body">
-                    <div class="ticket-row"><span>CLIENTE:</span> <b>${loan.name}</b></div>
-                    <div class="ticket-row"><span>CUOTAS PAGADAS:</span> <b>${p.cuotasPagadas}</b></div>
-                    <div class="ticket-row"><span>SEMANA:</span> <b>${loan.payments.length} DE 13</b></div>
-                    <div class="ticket-amount">RD$ ${p.amount.toLocaleString()}</div>
-                    <div class="ticket-row" style="justify-content: center; font-weight: bold;">RESTANTE: RD$ ${((13-loan.payments.length)*loan.perWeek).toLocaleString()}</div>
-                </div>
-                <img src="${loan.signature}" class="sig-img">
-                <p style="font-size: 8px;">Firma del Cliente</p>
-            </div>`;
-        document.getElementById('t-modal').classList.remove('hidden');
+    function openPayModal(id) { 
+        const l = db.find(x => x.id === id); 
+        document.getElementById('pago-client-name').innerText = l.name; 
+        document.getElementById('pago-monto').value = l.perWeek; 
+        document.getElementById('pago-confirm-btn').onclick = () => processPay(l.id, false); 
+        document.getElementById('pago-print-btn').onclick = () => processPay(l.id, true); 
+        document.getElementById('modal-pago').classList.remove('hidden'); 
     }
 
-    function showReceiptsHistory() {
-        const list = document.getElementById('receipts-list');
-        list.innerHTML = "";
-        let allPayments = [];
-        db.forEach(l => { 
-            l.payments.forEach(p => { 
-                if(!p.hidden) allPayments.push({ ...p, clientName: l.name, clientId: l.id }); 
-            }); 
-        });
-        allPayments.sort((a,b) => b.timestamp - a.timestamp).forEach(rp => {
-            list.innerHTML += `
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
-                <div>
-                    <p class="text-[10px] text-gold font-black uppercase italic">${rp.clientName}</p>
-                    <p class="text-xs font-bold">RD$ ${rp.amount.toLocaleString()} - ${rp.date}</p>
-                </div>
-                <button onclick="deleteReceipt(${rp.clientId}, ${rp.pid})" class="text-red-500 text-[10px] font-bold">BORRAR</button>
-            </div>`;
-        });
-        document.getElementById('modal-historial').classList.remove('hidden');
-    }
-
-    function deleteReceipt(cId, pId) {
-        if(!confirm("¿Borrar recibo?")) return;
-        const c = db.find(x => x.id === cId);
-        c.payments = c.payments.filter(p => p.pid !== pId);
+    function processPay(id, withReceipt) {
+        const l = db.find(x => x.id === id);
+        let m = parseFloat(document.getElementById('pago-monto').value);
+        if(!m) return;
+        const fecha = new Date().toLocaleDateString();
+        const ts = Date.now();
+        l.payments.push({ pid: ts, date: fecha, timestamp: ts, amount: m });
         localStorage.setItem('perdomo_db', JSON.stringify(db));
-        showReceiptsHistory(); render(); updateStats();
+        document.getElementById('modal-pago').classList.add('hidden');
+        if(withReceipt) generatePaymentReceipt(id, m);
+        render(); updateStats();
     }
 
-    function toggleConfig() { initUI(); document.getElementById('modal-config').classList.toggle('hidden'); }
-    function initUI() {
-        const filterCont = document.getElementById('ruta-filter-container');
-        filterCont.innerHTML = `<button onclick="setRuta('TODOS')" class="btn-ruta active" id="btn-TODOS">TODOS</button>`;
-        rutaNames.forEach(name => { 
-            filterCont.innerHTML += `<button onclick="setRuta('${name}')" class="btn-ruta bg-slate-900 px-4 py-2 rounded-xl text-[10px] font-bold text-white uppercase" id="btn-${name}">${name}</button>`; 
-        });
-        document.getElementById('c-ruta').innerHTML = rutaNames.map(name => `<option value="${name}">${name}</option>`).join('');
-        document.getElementById('config-inputs').innerHTML = rutaNames.map((name, i) => `<input type="text" id="edit-ruta-${i}" value="${name}" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-sm uppercase">`).join('');
+    function saveLoan() {
+        const id = document.getElementById('edit-id').value;
+        const name = document.getElementById('c-name').value.toUpperCase();
+        if(!name) return;
+        if(id) {
+            const l = db.find(x => x.id == id);
+            l.name = name; l.phone = document.getElementById('c-phone').value;
+            l.business = document.getElementById('c-business').value.toUpperCase();
+            l.address = document.getElementById('c-address').value.toUpperCase();
+            l.ruta = document.getElementById('c-ruta').value;
+            if(tempPhotos.length > 0) l.photos = [...tempPhotos];
+        } else {
+            const amt = parseFloat(document.getElementById('c-amount').value);
+            if(!amt) return alert("Monto requerido");
+            db.push({ id: Date.now(), name, phone: document.getElementById('c-phone').value, business: document.getElementById('c-business').value.toUpperCase(), address: document.getElementById('c-address').value.toUpperCase(), ruta: document.getElementById('c-ruta').value, total: amt, perWeek: (amt/10), startDate: Date.now(), payments: [], photos: [...tempPhotos], signature: canvas.toDataURL() });
+        }
+        localStorage.setItem('perdomo_db', JSON.stringify(db));
+        closeModalRegistro(); render(); updateStats();
     }
-    function setRuta(r) { rutaActual = r; document.querySelectorAll('.btn-ruta').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + r).classList.add('active'); render(); }
-    function setStatusFilter(s) { statusFilter = s; document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); document.getElementById('f-' + s.toLowerCase()).classList.add('active'); render(); }
+
+    // --- FUNCIONES AUXILIARES ---
+    function saveGasto() {
+        const desc = document.getElementById('g-desc').value.toUpperCase();
+        const monto = parseFloat(document.getElementById('g-monto').value);
+        if(!desc || !monto) return;
+        gastos.push({ id: Date.now(), desc, monto, date: new Date().toLocaleDateString() });
+        localStorage.setItem('perdomo_gastos', JSON.stringify(gastos));
+        document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
+        renderGastos(); updateStats();
+    }
+
+    function renderGastos() {
+        const lista = document.getElementById('lista-gastos');
+        const hoy = new Date().toLocaleDateString();
+        lista.innerHTML = gastos.filter(g => g.date === hoy).reverse().map(g => `
+            <div class="flex justify-between bg-black p-3 rounded-xl border border-slate-800">
+                <span class="text-[9px] text-slate-300 uppercase">${g.desc}</span>
+                <div class="flex gap-3 items-center">
+                    <span class="text-[10px] text-rose-500 font-black">-RD$ ${g.monto.toLocaleString()}</span>
+                    <button onclick="deleteGasto(${g.id})" class="text-rose-900 font-bold px-2 italic text-xs">X</button>
+                </div>
+            </div>`).join('') || '<p class="text-center text-[8px] text-slate-700 uppercase">Sin gastos hoy</p>';
+    }
+
+    function openEdit(id) { 
+        const l = db.find(x => x.id === id); 
+        document.getElementById('modal-title').innerText = "EXPEDIENTE: " + l.name; 
+        document.getElementById('edit-id').value = l.id; 
+        document.getElementById('c-name').value = l.name; 
+        document.getElementById('c-phone').value = l.phone || ""; 
+        document.getElementById('c-business').value = l.business; 
+        document.getElementById('c-address').value = l.address; 
+        document.getElementById('c-ruta').value = l.ruta; 
+        document.getElementById('loan-profile-info').classList.remove('hidden');
+        document.getElementById('p-total').innerText = "RD$ " + l.total.toLocaleString();
+        document.getElementById('p-cuota').innerText = "RD$ " + l.perWeek.toLocaleString();
+        document.getElementById('loan-inputs-group').classList.add('hidden'); 
+        document.getElementById('payments-history').classList.remove('hidden'); 
+        const hList = document.getElementById('history-list'); 
+        hList.innerHTML = l.payments.map((p, index) => `<div class="flex justify-between bg-slate-900 p-2 rounded mb-1 text-[9px]"><span>${p.date}</span><span>RD$ ${p.amount.toLocaleString()}</span><button onclick="deletePayment(${l.id}, ${index})" class="text-rose-500 font-bold px-2">X</button></div>`).join('') || 'SIN PAGOS'; 
+        tempPhotos = l.photos || []; updatePhotoPreview(); 
+        document.getElementById('modal-registro').classList.remove('hidden'); 
+    }
+
+    function deletePayment(loanId, idx) { if(confirm("¿Eliminar pago?")) { db.find(l=>l.id===loanId).payments.splice(idx,1); localStorage.setItem('perdomo_db', JSON.stringify(db)); openEdit(loanId); render(); updateStats(); } }
+    function deleteGasto(id) { if(confirm("¿Eliminar gasto?")) { gastos = gastos.filter(g=>g.id!==id); localStorage.setItem('perdomo_gastos', JSON.stringify(gastos)); renderGastos(); updateStats(); } }
+    function deleteClient(id) { if(confirm("¿ELIMINAR CLIENTE?")) { db = db.filter(l => l.id !== id); localStorage.setItem('perdomo_db', JSON.stringify(db)); render(); updateStats(); } }
+    function openModalGastos() { renderGastos(); document.getElementById('modal-gastos').classList.remove('hidden'); }
+    function closeModalGastos() { document.getElementById('modal-gastos').classList.add('hidden'); }
+    function openModalRegistro() { document.getElementById('modal-title').innerText = "NUEVO"; document.getElementById('loan-profile-info').classList.add('hidden'); document.getElementById('edit-id').value = ""; document.getElementById('loan-inputs-group').classList.remove('hidden'); document.getElementById('payments-history').classList.add('hidden'); tempPhotos = []; updatePhotoPreview(); ctx.clearRect(0,0,300,150); document.getElementById('modal-registro').classList.remove('hidden'); }
+    function closeModalRegistro() { document.getElementById('modal-registro').classList.add('hidden'); }
+    
     function updateStats() {
         const today = new Date().toLocaleDateString();
-        let sum = 0; db.forEach(l => l.payments.forEach(p => { if(p.date === today) sum += p.amount; }));
-        document.getElementById('daily-sum-head').innerText = "RD$ " + sum.toLocaleString();
-    }
-    function deleteClient(id) { if(confirm("¿Eliminar?")) { db = db.filter(x => x.id !== id); localStorage.setItem('perdomo_db', JSON.stringify(db)); render(); updateStats(); } }
-    function closeModal() { document.getElementById('t-modal').classList.add('hidden'); }
-    
-    function closeModalRegistro() { 
-        document.getElementById('modal-registro').classList.add('hidden'); 
-        editingId = null;
-        renewingId = null;
-        tempPhotos = [];
-        document.getElementById('photo-preview-container').innerHTML = '';
-        document.getElementById('reg-title').innerText = "Nuevo Expediente";
-        document.getElementById('btn-save-loan').innerText = "Guardar";
-        document.getElementById('btn-save-loan').onclick = addLoan;
-        document.getElementById('amount-container').classList.remove('hidden');
-        document.getElementById('signature-container').classList.remove('hidden');
-        // Reset form
-        ['c-name', 'c-phone', 'c-address', 'c-business', 'c-amount', 'c-income'].forEach(id => document.getElementById(id).value = '');
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-    }
-
-    function saveRutaNames() {
-        rutaNames = [];
-        for(let i=0; i<6; i++) rutaNames.push(document.getElementById(`edit-ruta-${i}`).value.toUpperCase() || `RUTA ${i+1}`);
-        localStorage.setItem('perdomo_rutas', JSON.stringify(rutaNames));
-        location.reload();
-    }
-    function exportData() {
-        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Sovereign_Backup.json`;
-        link.click();
-    }
-
-    // Firma
-    const canvas = document.getElementById('sig-canvas');
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-    const getPos = (e) => { const rect = canvas.getBoundingClientRect(); return { x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left, y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top }; };
-    canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); e.preventDefault(); });
-    canvas.addEventListener('touchmove', (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.strokeStyle = "#D4AF37"; ctx.lineWidth = 3; ctx.stroke(); e.preventDefault(); });
-    window.addEventListener('touchend', () => drawing = false);
-
-    function addLoan() {
-        const name = document.getElementById('c-name').value;
-        const amount = parseFloat(document.getElementById('c-amount').value);
-        if(!name || isNaN(amount)) return alert("Faltan datos");
-        db.push({
-            id: Date.now(), name: name.toUpperCase(), phone: document.getElementById('c-phone').value,
-            address: document.getElementById('c-address').value, business: document.getElementById('c-business').value.toUpperCase(),
-            ruta: document.getElementById('c-ruta').value,
-            total: amount, perWeek: (amount / 1000) * 100, startDate: Date.now(),
-            photos: [...tempPhotos], signature: canvas.toDataURL(), payments: []
+        let cobrosHoy = 0, gastosHoy = 0, capitalCalle = 0;
+        db.forEach(l => {
+            l.payments.forEach(p => { if(p.date === today) cobrosHoy += p.amount; });
+            if(getLoanInfo(l).status !== 'SALDADO') capitalCalle += (13 - l.payments.length) * l.perWeek;
         });
-        localStorage.setItem('perdomo_db', JSON.stringify(db));
-        location.reload();
+        gastos.forEach(g => { if(g.date === today) gastosHoy += g.monto; });
+        document.getElementById('stat-cobrado-hoy').innerText = "RD$ " + cobrosHoy.toLocaleString();
+        document.getElementById('stat-gastos-hoy').innerText = "RD$ " + gastosHoy.toLocaleString();
+        document.getElementById('stat-caja-hoy').innerText = "RD$ " + (cobrosHoy - gastosHoy).toLocaleString();
+        document.getElementById('stat-calle').innerText = "RD$ " + capitalCalle.toLocaleString();
     }
 
-    function handlePhotos(input) {
-        if (input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => { 
-                tempPhotos.push(e.target.result); 
-                document.getElementById('photo-preview-container').innerHTML = tempPhotos.map(p => `<img src="${p}" class="photo-preview">`).join('');
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+    function initUI() {
+        const filterCont = document.getElementById('ruta-filter-container');
+        filterCont.innerHTML = `<button onclick="setRuta('TODOS')" class="btn-ruta bg-slate-900 active px-5 py-2 rounded-xl text-[9px] font-black" id="btn-TODOS">TODAS</button>`;
+        rutaNames.forEach(n => filterCont.innerHTML += `<button onclick="setRuta('${n}')" class="btn-ruta bg-slate-900 px-5 py-2 rounded-xl text-[9px] font-black uppercase" id="btn-${n}">${n}</button>`);
+        document.getElementById('c-ruta').innerHTML = rutaNames.map(n => `<option value="${n}">${n}</option>`).join('');
     }
+
+    function setRuta(r) { rutaActual = r; document.querySelectorAll('.btn-ruta').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+r).classList.add('active'); render(); }
+    function setStatusFilter(s) { statusFilter = s; document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); document.getElementById('f-'+s.toLowerCase()).classList.add('active'); render(); }
+    function handlePhotos(input) { if (input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { tempPhotos = [e.target.result]; updatePhotoPreview(); }; reader.readAsDataURL(input.files[0]); } }
+    function updatePhotoPreview() { document.getElementById('photo-preview').innerHTML = tempPhotos.map((p, i) => `<img src="${p}" class="w-10 h-10 rounded-lg object-cover">`).join(''); }
+
+    const canvas = document.getElementById('sig-canvas'); const ctx = canvas.getContext('2d');
+    function initCanvas() {
+        let drawing = false;
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const cX = e.touches ? e.touches[0].clientX : e.clientX;
+            const cY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: cX - rect.left, y: cY - rect.top };
+        };
+        canvas.addEventListener('pointerdown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('pointermove', (e) => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = "#D4AF37"; ctx.lineWidth = 3; ctx.stroke(); });
+        window.addEventListener('pointerup', () => drawing = false);
+    }
+
+    window.onload = () => { if(localStorage.getItem('last_login_time')) showApp(); };
 </script>
 </body>
 </html>
